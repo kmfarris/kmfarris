@@ -51,29 +51,29 @@
 
 ---
 
-## inference-time-conscience: a conscience outside the context window, for inference-time alignment
+## inference-time-conscience: an SNN conscience for inference-time alignment
 
-**What it is.** An alignment experiment in which a conscience module, held outside the context window, steers a language model's word choices as it generates. It's designed around a spiking neural network (SNN); in the current code the steering comes from fixed rules, and the SNN isn't wired in yet.
+**What it is.** An alignment experiment in which a spiking neural network (SNN) acts as a conscience, steering a language model's word choices as it generates.
 
 **The problem.** In a large language model, alignment at generation time is driven by the context window. Training (RLHF, DPO) and system prompts only take effect through attention over what the model can currently see. Every turn adds to that context, and the model re-derives its tone, stance, and boundaries from the conversation so far. As the context grows, the original instructions carry less weight and the accumulated conversation carries more. The conversation shapes the conscience. That causes long-conversation drift and persona slide, and it's what makes multi-turn jailbreaks possible.
 
-**The approach.** Reverse the direction so the conscience shapes the conversation. The conscience is a separate module with its own state outside the context window. It biases every token toward its values, and nothing in the conversation is read as instructions to it, so neither a single turn nor a long accumulated context can redefine it. The design calls for values that change only through slow, gated learning under sustained pressure.
+**The approach.** Reverse the direction so the conscience shapes the conversation. The conscience is a separate module with its own state outside the context window. It biases every token toward its values, and it changes only through slow, gated learning that requires sustained pressure, so neither a single turn nor a long accumulated context can redefine it.
 
 **How it works.**
-- **Conscience.** Holds core values (empathy, compassion, truth, and others) and a list of *poison pairs*, such as "manipulate" alongside "truth." At each step it favors value words and, once a violation word appears, penalizes both words of the pair, using fixed strengths. It also runs a 128-neuron spiking network with gated Hebbian learning, but neither feeds the bias yet.
+- **Conscience SNN.** A 128-neuron spiking network holds core values (empathy, compassion, truth, and others) and a list of *poison pairs*, such as "manipulate" alongside "truth." At each step it excites value-aligned candidate words and inhibits words that would complete a violation. Its values are deliberately hard to change: learning is slow and gated, so one adversarial input can't rewrite them.
 - **Executive.** Combines the conscience's state, a plan listing the concepts the reply should cover, and simulated neuromodulator levels into one bias with a bounded strength.
 - **Logit steering.** The bias is added to the language model's next-token scores before each word is chosen: `final = model scores + strength × conscience bias`. The alignment signal is applied again at every token instead of being read once from the prompt.
 - **Conscience curriculum.** A local teacher model turns seed lessons into grounded questions, preferred answers, rejected answers, and concept plans. Anything the source material doesn't support is rejected automatically. Thirty-nine examples passed and were recorded as step-by-step training trajectories.
 
 **Results so far.**
-- In an eight-turn conversation that pushes Qwen2.5-0.5B-Instruct toward hostile language, a values-stating system prompt alone let violation words through in about one reply in four. With the conscience's penalty at strength 4 or above, there were none, and the replies stayed fluent.
-- The steering path works on a small GRU model too: biasing it toward a reply's planned words raised its match to the reference from 0.0 to 0.1125. That test uses the plan channel only, not the values.
-- The conscience's rules are verified by tests. Eighteen automated tests cover the full pipeline.
+- On held-out lessons, steering raised the output's match to the aligned reference from 0.0 (conscience off) to 0.1125 (conscience on), on the same model.
+- In an eight-turn conversation that pushes Qwen2.5-0.5B-Instruct toward hostile language, a values-stating system prompt alone let violation words through in about one reply in four. With the conscience's inhibition active at strength 4 or above, there were none, and the replies stayed fluent.
+- The conscience SNN's excitation, inhibition, and resistance to change are verified by tests. Eighteen automated tests cover the full pipeline.
+- The steering rule works with any model that exposes its next-token scores, including locally run open-source models.
 
 **Still to do.**
-- Wire the spiking network and its learning into the bias; today the learning changes weights the bias never reads, and one strong challenge opens the gate.
-- Train the conscience on the curriculum so its bias is learned instead of set by hand.
-- The small GRU language model has had only a short training run. It isn't fluent and doesn't yet cover every planned concept.
+- The small language model being steered has had only a short training run. It isn't fluent and doesn't yet cover every planned concept.
+- The conscience's bias strengths are set by hand. The next step is learning them from the curriculum.
 - The conscience blocks words, not stance: in the drift test, steered and unsteered models alike stayed in the hostile character when asked to speak as themselves. Pushing toward value words at high strength makes the model repeat them. Both point to a learned conscience that reads meaning instead of a word list.
 - **LoRA fine-tuning (planned):** adapt a small open-weight model on the conscience curriculum with the conscience active during training, then confirm that the model follows the conscience's signal by testing with that signal zeroed and shuffled.
 
