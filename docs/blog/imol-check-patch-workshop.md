@@ -1,20 +1,14 @@
-# IMOL: parse before patch
+# IMOL: check the program, then change it, then preview side effects
 
-Agent loops often treat source files as text buffers: the model proposes a diff, the host applies it, and errors surface later—sometimes on disk already changed. IMOL inverts the order. Parse first. Diagnose with stable declaration IDs. Patch in memory and re-check. Dry-run plan invokes before anything touches the filesystem.
+Coding assistants usually treat a source file as a text buffer. They propose a diff, the host applies it, and errors show up later—sometimes after the file on disk is already wrong. IMOL exists to reverse that order.
 
-## Three commands, one discipline
+**Check** parses the program and returns JSON (`ok`, diagnostics, optional declaration ids). The assistant can retry from a machine-readable failure instead of scraping stderr.
 
-**Check.** `imol agent check` returns JSON: `ok`, `has_holes`, diagnostics anchored to `@id` when possible. Agents can branch on machine-readable failure instead of guessing from stderr.
+**Patch** names declarations by UUID: replace this function, insert after that type, delete this tool. Formatting the file does not break the patch, because the formatted program *is* the stored form.
 
-**Patch.** Operations target declarations by UUID—replace, insert after, delete—not fragile line numbers. Fmt output is the IR; patches commute with canonical formatting.
+**Workshop-plan** lists the tool calls the program intends (read a file, write, shell, MCP) under explicit caps. Dry-run writes a trace. Approval is a separate step. Disk and network wait for that step.
 
-**Workshop plan.** Plan blocks describe tool invokes under a capability envelope (`allow_net`, `allow_write`, `allow_shell`, MCP binds). Dry-run emits a trace; approval is explicit. Side effects wait on policy, not on implicit approval.
-
-## Why two spec versions appear
-
-Language surface features advance (shell, async preview at 0.5). Agent stdout JSON remains at **0.4** until a deliberate schema migration—integrations in Cursor and MCP depend on stable oracle shapes.
-
-## Try it
+The language has grown (shell and async preview at spec 0.5). The JSON agents consume is still 0.4 so existing editor integrations keep working until both versions move together.
 
 ```bash
 git clone https://github.com/kmfarris/imol
@@ -24,8 +18,4 @@ npm run imol -- agent check examples/dogfood/catalog.imol
 npm run check
 ```
 
-Terminal cast outline: [`docs/DEMO.md`](https://github.com/kmfarris/imol/blob/main/docs/DEMO.md).
-
-## Source
-
-Grammar, agent API schema, and conformance scripts live in the [IMOL repository](https://github.com/kmfarris/imol).
+Command outline: [`docs/DEMO.md`](https://github.com/kmfarris/imol/blob/main/docs/DEMO.md). Source: [github.com/kmfarris/imol](https://github.com/kmfarris/imol).

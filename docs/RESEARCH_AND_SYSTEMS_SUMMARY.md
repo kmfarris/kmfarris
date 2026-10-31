@@ -6,34 +6,34 @@
 
 ## customLLM / PRCF
 
-**Problem:** Subword tokenization optimizes spelling fragments; edits are often non-local in id space, and swapping an entity may require retokenizing the whole span.
+**Purpose.** Cut English into word-aligned codes (not spelling fragments), keep edits local, decode without collisions, and see whether a small language model trained on those codes can match or beat the usual tokenizer (BPE) when the model body is the same.
 
-**Approach:** Positioned codes per word, bucket+slot packing with lossless escape for OOV, CodeBPE merges adjacent code ids, then train matched LMs on text BPE vs CodeBPE alphabets.
+**What works.** Full WikiText-2, six-layer 384-wide models: train BPC **1.76** vs **1.88**, train packing **0.227** vs **0.240** symbols per character, invertibility **1.00**, ±2 locality **1.00**.
 
-**Status:** Full WikiText-2 working run recorded—train BPC **1.76** vs **1.88**, packing **0.227** vs **0.240** sym/char, invertibility and ±2 locality **1.00** in codec index space. Direction 3 missed coarseness gates. WikiText-2 scale only; see [`SCOPE_AND_LIMITS.md`](https://github.com/kmfarris/customLLM/blob/main/docs/SCOPE_AND_LIMITS.md).
+**What still needs work.** Validation packing is looser than train. Merges are still near word length. Direction 3 missed coarseness gates. SentencePiece on the same split and anything larger than WikiText-2 are not measured yet.
 
-[`results.json`](https://github.com/kmfarris/customLLM/blob/main/experiments/working_lm/results.json)
+[`results.json`](https://github.com/kmfarris/customLLM/blob/main/experiments/working_lm/results.json) · [`SCOPE_AND_LIMITS.md`](https://github.com/kmfarris/customLLM/blob/main/docs/SCOPE_AND_LIMITS.md)
 
 ---
 
 ## IMOL
 
-**Problem:** LLM agents patch and invoke tools against source that may not parse; line-based diffs drift after fmt.
+**Purpose.** Give coding agents a language they can typecheck and a runtime they can dry-run: parse first, patch by stable ids, preview tool calls, then approve writes and network.
 
-**Approach:** IMOL modules with `@id` declarations, fmt as IR, JSON agent oracles, workshop dry-run traces, MCP skill codebook for closed-model hosts.
+**What works.** Parser, checker, formatter, patcher, workshop, CLI, and MCP oracles ship. **`npm run check`** passes on a clean clone.
 
-**Status:** Toolchain ships; **`npm run check`** passes. Language **0.5** (shell, async preview); agent stdout **0.4**. [`DESIGN.md`](https://github.com/kmfarris/imol/blob/main/docs/DESIGN.md)
+**What still needs work.** Language spec 0.5 vs agent JSON 0.4 should migrate together. Formal semantics and npm publish are unfinished.
+
+[`DESIGN.md`](https://github.com/kmfarris/imol/blob/main/docs/DESIGN.md)
 
 ---
 
 ## scatterbrain-steering
 
-**Problem:** Turn-level plans and affect should steer an open-vocabulary decoder without resetting memory each token.
+**Purpose.** Keep a decoder’s memory of the sentence while a separate executive signal nudges each next word (plan, guidance, chemical levels). Measure that steering with tests, ablations, and a teacher-built curriculum.
 
-**Approach:** GRU articulator + `ExecutivePoller` → `InfluenceSignal` → residual logit bias; conscience curriculum with local teacher fail-closed validation.
+**What works.** Fifteen tests pass. Curriculum v1 has 39 approved trajectories; failed lessons are kept. Influence changes scores in ablation.
 
-**Status:** **15** pytest tests pass; curriculum v1 artifact with **39** approved trajectories; articulator release gates failed on smoke training (fluency / repetition). Not default speech in Scatterbrain. [`STEERING.md`](https://github.com/kmfarris/scatterbrain-steering/blob/main/docs/STEERING.md) · [`SPEECH_STATUS.md`](https://github.com/kmfarris/scatterbrain-steering/blob/main/SPEECH_STATUS.md)
+**What still needs work.** Smoke-trained decoder failed fluency and coverage gates. The poller is designed, not trained on the curriculum. Track C is off by default in Scatterbrain.
 
----
-
-Issues and PRs welcome on each repository.
+[`STEERING.md`](https://github.com/kmfarris/scatterbrain-steering/blob/main/docs/STEERING.md) · [`SPEECH_STATUS.md`](https://github.com/kmfarris/scatterbrain-steering/blob/main/SPEECH_STATUS.md)

@@ -1,23 +1,23 @@
 # Kelly Farris
 
-### [customLLM](https://github.com/kmfarris/customLLM) — token streams that stay local when text edits
+### [customLLM](https://github.com/kmfarris/customLLM)
 
-Spelling-BPE churns tokens when you change a single word. customLLM implements **PRCF**: word-aligned codes, injective bucket+slot ids for in-vocabulary items, CodeBPE merges on code sequences, and matched small LMs on WikiText-2. The working-scale run is in the tree—CodeBPE beats text BPE on train BPC under a shared 6-layer body; direction 3’s coarseness ladder failed at an intermediate slice, and that failure is logged beside the passes.
+Language models read **tokens**, not letters. How you cut text into tokens changes what a model can keep local, reconstruct, and learn. customLLM builds **PRCF**—word-aligned codes instead of spelling fragments—and trains a small language model on them next to the usual method (BPE). On WikiText-2 the code alphabet round-trips, keeps one-word edits nearby, and reaches **1.76** vs **1.88** bits per character under the same model size. Held-out packing and larger-scale baselines are still open.
 
-`pip install -e '.[dev]' && python -m pytest tests/` · [blog](docs/blog/prcf-wikitext2-results.md)
+[Notes on WikiText-2](docs/blog/prcf-wikitext2-results.md)
 
-### [IMOL](https://github.com/kmfarris/imol) — parse before patch, trace before side effects
+### [IMOL](https://github.com/kmfarris/imol)
 
-Agent-authored programs need the same discipline as human ones: valid IR, stable patch targets, tool invokes you can dry-run. IMOL is the language, checker, workshop runtime, and MCP oracles (`check`, id-keyed `patch`, `workshop-plan`). Language surface is at spec 0.5; agent JSON remains 0.4 for integrators. **`npm run check`** on a clean clone is the bar.
+Coding assistants often write programs by dumping text onto disk. IMOL is a language and a runtime for the opposite order: **check** the program, **patch** it by stable ids, **preview** planned file and network actions, then approve. The toolchain builds and passes conformance on a clean clone. Spec versions for the language and for agent JSON still need a joint bump; a published package process is unfinished.
 
-[blog](docs/blog/imol-check-patch-workshop.md) · [DESIGN](https://github.com/kmfarris/imol/blob/main/docs/DESIGN.md)
+[Notes on the agent loop](docs/blog/imol-check-patch-workshop.md)
 
-### [scatterbrain-steering](https://github.com/kmfarris/scatterbrain-steering) — executive bias on a persistent decoder
+### [scatterbrain-steering](https://github.com/kmfarris/scatterbrain-steering)
 
-Track C does not throw away LM memory—it adds a per-token executive poll that biases logits while a GRU carries state across the reply. Conscience curriculum data and fail-closed teacher boundaries ship with the code; smoke LM training has **not** cleared fluency release gates, so this remains research infrastructure with tests green, production flag off in the parent project.
+Speech needs memory of the sentence *and* control over the next word. This project keeps a small decoder’s memory across the reply and, at every step, lets a plan and other turn signals **nudge** word choice. Tests and a 39-trajectory curriculum are in the repo. The decoder itself is not fluent yet (release gates failed on a smoke train), and the executive is still a designed poll, not a trained network.
 
-`pip install -r requirements-dev.txt && PYTHONPATH=. python -m pytest tests/ -q` · [STEERING](https://github.com/kmfarris/scatterbrain-steering/blob/main/docs/STEERING.md)
+[How steering is wired](https://github.com/kmfarris/scatterbrain-steering/blob/main/docs/STEERING.md)
 
 ---
 
-Longer write-ups: [technical summary](docs/RESEARCH_AND_SYSTEMS_SUMMARY.md)
+[One-page summary](docs/RESEARCH_AND_SYSTEMS_SUMMARY.md)
