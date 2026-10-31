@@ -1,12 +1,12 @@
 # Kelly Farris
 
-## [customLLM](https://github.com/kmfarris/customLLM): a new way to break text into pieces for AI
+## [CodeBPE](https://github.com/kmfarris/CodeBPE): byte-pair encoding over stable word codes
 
-AI language models, like the ones behind chat assistants, can't read words directly. Text is first chopped into small pieces called **tokens**, and the model learns to predict one piece after another. The standard method chops text wherever letter combinations are common. Because of that, changing one word can reshuffle pieces somewhere else in the sentence, and the pieces don't line up with whole words.
+Language models read text as **tokens**, produced by byte-pair encoding (BPE): starting from characters, the most frequent adjacent pairs are merged again and again. The resulting tokens are statistical fragments. They rarely line up with word boundaries, and a one-word edit can change how the surrounding text is tokenized, so it's hard to trace which tokens a word produced or to change one word in token form.
 
-customLLM gives every known word its own fixed code, a bit like a library call number. Words the system has never seen are spelled out letter by letter, so nothing is lost. Codes that often appear side by side are joined into larger pieces. To test the idea fairly, two identical small AI models were trained on the same two million words of English text, one using the standard pieces and one using these codes.
+CodeBPE gives every vocabulary word a fixed, collision-free code (a bucket and a slot) and spells out unknown words after an escape marker, so encoding is always lossless. BPE then merges those word codes instead of raw characters. To isolate the tokenizer's effect, two language models with identical architecture were trained on the same WikiText-2 data, one on standard text BPE and one on CodeBPE.
 
-The code version turned text back into the exact original every time. Changing one word only affected the codes right next to it. The model trained on codes also learned the text slightly better. It still works less well on text it hasn't seen before, and it has only been tested at small scale.
+Decoding reproduced the original text exactly, and a one-word edit was pinpointed exactly in every test. At matched model size, the CodeBPE model reached 1.76 bits per character on held-out text, against 1.88 for text BPE, which is 6% lower. CodeBPE packs held-out text less tightly than text BPE because more unseen words have to be spelled out, and it hasn't yet been compared against SentencePiece or tested beyond small scale.
 
 [Read more](docs/blog/prcf-wikitext2-results.md)
 
@@ -20,7 +20,7 @@ All of the tools work, the automated tests pass, and IMOL connects to the Cursor
 
 [Read more](docs/blog/imol-check-patch-workshop.md)
 
-## [scatterbrain-steering](https://github.com/kmfarris/scatterbrain-steering): an SNN conscience for inference-time alignment
+## [inference-time-conscience](https://github.com/kmfarris/inference-time-conscience): an SNN conscience for inference-time alignment
 
 Most AI alignment happens before a model is used. Fine-tuning builds values into the weights, and a system prompt states rules at the top of the conversation. During generation, the model has to keep to those rules on its own, and long replies can drift away from them.
 
@@ -28,7 +28,7 @@ This project adds a conscience that runs alongside the language model. A spiking
 
 On held-out lessons, steering raised the output's match to the aligned reference answer from 0.0 to 0.1125. The small language model it steers isn't fluent yet, and the conscience's bias strengths are still set by hand. The planned next step is LoRA fine-tuning of an open-weight model on the curriculum, with the conscience active during training.
 
-[How it works](https://github.com/kmfarris/scatterbrain-steering/blob/main/docs/STEERING.md)
+[How it works](https://github.com/kmfarris/inference-time-conscience/blob/main/docs/STEERING.md)
 
 ---
 

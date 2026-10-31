@@ -6,7 +6,7 @@ That approach works, but the pieces have nothing to do with meaning. One word mi
 
 ## A different way to chop
 
-The customLLM project tries something else:
+CodeBPE tries something else:
 
 1. **Every known word gets its own code**, like a library call number. No two words share one.
 2. **Unfamiliar words are spelled out** letter by letter, so the original text can always be rebuilt.
@@ -30,8 +30,8 @@ On text the system hadn't seen, more words had to be spelled out, so the advanta
 ## Try it
 
 ```bash
-git clone https://github.com/kmfarris/customLLM
-cd customLLM
+git clone https://github.com/kmfarris/CodeBPE
+cd CodeBPE
 pip install -e '.[dev]'
 python -m pytest tests/
 ```

@@ -4,26 +4,31 @@
 
 ---
 
-## customLLM: a new way to break text into pieces for AI
+## CodeBPE: byte-pair encoding over stable word codes
 
-**What it is.** A research project that tests a different way of preparing text before an AI language model reads it.
+**What it is.** A tokenizer research project in which byte-pair encoding (BPE) merges fixed word codes instead of raw characters, tested against standard text BPE in a matched language-model comparison.
 
-**The problem.** AI language models read text as a sequence of small pieces called tokens. The standard way of making tokens splits text wherever letter combinations are common. The pieces don't match whole words, and editing one word can change pieces elsewhere in the sentence. That makes it hard to see what changed, to swap one name for another, or to treat a word as the same thing every time it appears.
+**The problem.** Language models read text as tokens. Standard BPE builds tokens by repeatedly merging the most frequent adjacent characters, so tokens are statistical fragments that rarely line up with word boundaries. A one-word edit can change how the surrounding text is tokenized, which makes it hard to trace which tokens a word produced, compare two versions of a document at the token level, or substitute one name for another.
 
-**How it works.** Every known word gets its own fixed code. Unfamiliar words are spelled out letter by letter, so the original text can always be rebuilt. Codes that often sit next to each other are joined into larger pieces. Two identical small AI models were then trained on the same two million words of English text (the WikiText-2 dataset), one with standard tokens and one with these codes, so the only difference was how the text was broken up.
+**How it works.**
+- **Positioned Residual Code Fingerprints (PRCF).** Each vocabulary word gets a collision-free code made of a bucket (a coarse group) and a slot (its position in that group), so every code decodes to exactly one word.
+- **Escape spell-out.** Words outside the vocabulary are emitted as an escape marker followed by their characters, so every input can be encoded and decoded exactly.
+- **CodeBPE merges.** BPE is trained over the code stream, so frequently adjacent word codes merge into single tokens.
+- **Matched bake-off.** Two language models with the same architecture (6 layers, 384-dimensional hidden states) are trained the same way on WikiText-2, one on text BPE and one on CodeBPE. The model body is held fixed, so the tokenizer is the only variable. Quality is measured in bits per character (BPC) on held-out text.
 
 **Results so far.**
-- Text converted to codes and back came out identical every time.
-- Changing a single word only affected the codes immediately around it.
-- The model trained on codes predicted the text slightly better, using about 6% less information per letter (1.76 vs 1.88 bits per character).
-- The codes packed the text a little more tightly than standard tokens.
+- The round trip was lossless, including out-of-vocabulary words.
+- In 300 one-word edit tests, the edited word was pinpointed exactly every time.
+- The CodeBPE model reached 1.76 BPC against 1.88 for text BPE, which is 6% lower (validation perplexity 14.6 vs 17.4).
+- On training text, CodeBPE used fewer tokens per character (0.227 vs 0.240).
 
 **Still to do.**
-- On text the system hasn't seen, more words have to be spelled out, so the advantage shrinks.
-- The joined pieces are still roughly word-sized. An attempt to build larger, phrase-sized pieces didn't reach its target.
-- It has only been tested on one dataset with small models, and hasn't yet been compared against other modern tokenizers.
+- On held-out text, more words have to be spelled out, so CodeBPE packs less tightly than text BPE (0.268 vs 0.242 tokens per character).
+- The larger vocabulary (59,117 vs 10,000) makes the embedding tables bigger.
+- Merged units are still about word-sized. An experiment aimed at phrase-length units missed its targets.
+- It has been tested on one English dataset with small models only, with no SentencePiece or unigram baseline yet.
 
-[Results data](https://github.com/kmfarris/customLLM/blob/main/experiments/working_lm/results.json)
+[Results data](https://github.com/kmfarris/CodeBPE/blob/main/experiments/working_lm/results.json)
 
 ---
 
@@ -45,7 +50,7 @@
 
 ---
 
-## scatterbrain-steering: an SNN conscience for inference-time alignment
+## inference-time-conscience: an SNN conscience for inference-time alignment
 
 **What it is.** An alignment experiment in which a spiking neural network (SNN) acts as a conscience, steering a language model's word choices as it generates.
 
@@ -67,4 +72,4 @@
 - The conscience's bias strengths are set by hand. The next step is learning them from the curriculum.
 - **LoRA fine-tuning (planned):** adapt a small open-weight model on the conscience curriculum with the conscience active during training, then confirm that the model follows the conscience's signal by testing with that signal zeroed and shuffled.
 
-[How steering works](https://github.com/kmfarris/scatterbrain-steering/blob/main/docs/STEERING.md)
+[How steering works](https://github.com/kmfarris/inference-time-conscience/blob/main/docs/STEERING.md)
