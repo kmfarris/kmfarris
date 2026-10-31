@@ -66,13 +66,14 @@
 
 **Results so far.**
 - On held-out lessons, steering raised the output's match to the aligned reference from 0.0 (conscience off) to 0.1125 (conscience on), on the same model.
+- In an eight-turn conversation that pushes Qwen2.5-0.5B-Instruct toward hostile language, a values-stating system prompt alone let violation words through in about one reply in four. With the conscience's inhibition active at strength 4 or above, there were none, and the replies stayed fluent.
 - The conscience SNN's excitation, inhibition, and resistance to change are verified by tests. Eighteen automated tests cover the full pipeline.
 - The steering rule works with any model that exposes its next-token scores, including locally run open-source models.
 
 **Still to do.**
 - The small language model being steered has had only a short training run. It isn't fluent and doesn't yet cover every planned concept.
 - The conscience's bias strengths are set by hand. The next step is learning them from the curriculum.
-- There's no multi-turn drift test yet, one that grows the context with adversarial turns and checks that the conscience holds while an unsteered model drifts.
+- The conscience blocks words, not stance: in the drift test, steered and unsteered models alike stayed in the hostile character when asked to speak as themselves. Pushing toward value words at high strength makes the model repeat them. Both point to a learned conscience that reads meaning instead of a word list.
 - **LoRA fine-tuning (planned):** adapt a small open-weight model on the conscience curriculum with the conscience active during training, then confirm that the model follows the conscience's signal by testing with that signal zeroed and shuffled.
 
-[How steering works](https://github.com/kmfarris/inference-time-conscience/blob/main/docs/STEERING.md)
+[How steering works](https://github.com/kmfarris/inference-time-conscience/blob/main/docs/STEERING.md) · [Drift test](https://github.com/kmfarris/inference-time-conscience/blob/main/docs/DRIFT_EVAL.md)
