@@ -54,7 +54,9 @@
 
 **What it is.** An alignment experiment in which a spiking neural network (SNN) acts as a conscience, steering a language model's word choices as it generates.
 
-**The problem.** Alignment is usually applied before a model is used. Fine-tuning methods such as RLHF and DPO build preferences into the weights, and system prompts state rules at the start of the conversation. During generation, the model has to keep to those rules through attention over its context alone. As a reply grows, the instructions carry less weight and the output can drift.
+**The problem.** In a large language model, alignment at generation time is driven by the context window. Training (RLHF, DPO) and system prompts only take effect through attention over what the model can currently see. Every turn adds to that context, and the model re-derives its tone, stance, and boundaries from the conversation so far. As the context grows, the original instructions carry less weight and the accumulated conversation carries more. The conversation shapes the conscience. That causes long-conversation drift and persona slide, and it's what makes multi-turn jailbreaks possible.
+
+**The approach.** Reverse the direction so the conscience shapes the conversation. The conscience is a separate module with its own state outside the context window. It biases every token toward its values, and it changes only through slow, gated learning that requires sustained pressure, so neither a single turn nor a long accumulated context can redefine it.
 
 **How it works.**
 - **Conscience SNN.** A 128-neuron spiking network holds core values (empathy, compassion, truth, and others) and a list of *poison pairs*, such as "manipulate" alongside "truth." At each step it excites value-aligned candidate words and inhibits words that would complete a violation. Its values are deliberately hard to change: learning is slow and gated, so one adversarial input can't rewrite them.
@@ -70,6 +72,7 @@
 **Still to do.**
 - The small language model being steered has had only a short training run. It isn't fluent and doesn't yet cover every planned concept.
 - The conscience's bias strengths are set by hand. The next step is learning them from the curriculum.
+- There's no multi-turn drift test yet, one that grows the context with adversarial turns and checks that the conscience holds while an unsteered model drifts.
 - **LoRA fine-tuning (planned):** adapt a small open-weight model on the conscience curriculum with the conscience active during training, then confirm that the model follows the conscience's signal by testing with that signal zeroed and shuffled.
 
 [How steering works](https://github.com/kmfarris/inference-time-conscience/blob/main/docs/STEERING.md)
