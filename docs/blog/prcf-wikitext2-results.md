@@ -9,23 +9,23 @@ That approach works, but the pieces have nothing to do with meaning. One word mi
 CodeBPE tries something else:
 
 1. **Every known word gets its own code**, like a library call number. No two words share one.
-2. **Unfamiliar words are spelled out** letter by letter, so the original text can always be rebuilt.
+2. **Unfamiliar words are spelled out** letter by letter, so any text can be converted.
 3. **Codes that often sit side by side are joined** into larger pieces, the way standard tokenizers join letters.
 
-## A fair test
+## The test
 
-To find out whether this helps, two identical small AI models were trained on the same two million words of English from Wikipedia. One read standard tokens and the other read the new codes. Everything else was the same, so any difference comes from how the text was broken up.
+To find out whether this helps, two identical small AI models were trained on the same two million words of English from Wikipedia. One read standard tokens and the other read the new codes, with everything else the same.
 
 ## What happened
 
-- **Nothing was lost.** Text converted to codes and back came out exactly as it went in.
+- **Every word came back, but not its capitalization.** Each known word's code stands for one spelling, so about one word in nine came back with different capital letters.
 - **Edits stayed local.** Changing one word only changed the codes right around it.
-- **The model learned a little better.** The code-trained model needed about 6% less information per letter to predict the text (1.76 vs 1.88 bits per character).
-- **The text packed slightly tighter** as codes than as standard tokens.
+- **The code-trained model scored better, on an uneven test.** It needed less information per letter to predict the text (1.76 vs 1.88 bits per character), but the standard model also had to predict capital letters and the code-trained model didn't. A rerun with case matched on both sides is under way.
+- **Training text packed slightly tighter** as codes than as standard tokens.
 
 ## What's left
 
-On text the system hadn't seen, more words had to be spelled out, so the advantage shrank. The joined pieces are still roughly word-sized, and an attempt to build phrase-sized pieces fell short of its target. The test also used one dataset and small models. The next steps are comparing against other modern tokenizers on the same text, then trying much larger collections of text.
+The codes need to carry capitalization, so text comes back exactly and the comparison is even. On text the system hadn't seen, more words had to be spelled out, so it packed looser than standard tokens. The joined pieces are still roughly word-sized, and an attempt to build phrase-sized pieces fell short of its target. The test also used one dataset and small models. The next steps are comparing against other modern tokenizers on the same text, then trying much larger collections of text.
 
 ## Try it
 
