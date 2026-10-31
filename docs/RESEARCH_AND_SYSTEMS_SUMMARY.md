@@ -6,26 +6,34 @@
 
 ## customLLM / PRCF
 
-Positioned residual codes and bucket+slot packing define an invertible word-level alphabet; CodeBPE merges adjacent code ids (never through escape tokens). On full WikiText-2, a six-layer 384-d LM trained on that alphabet reaches train BPC **1.76** vs **1.88** for text BPE at the same width, train packing **0.227** vs **0.240** sym/char, invertibility **1.00**, ±2 edit locality **1.00** in codec index space. The direction-3 scale ladder missed coarseness gates at an intermediate slice; those numbers stay in the repo.
+**Problem:** Subword tokenization optimizes spelling fragments; edits are often non-local in id space, and swapping an entity may require retokenizing the whole span.
 
-[`experiments/working_lm/results.json`](https://github.com/kmfarris/customLLM/blob/main/experiments/working_lm/results.json) · [`docs/SCOPE_AND_LIMITS.md`](https://github.com/kmfarris/customLLM/blob/main/docs/SCOPE_AND_LIMITS.md)
+**Approach:** Positioned codes per word, bucket+slot packing with lossless escape for OOV, CodeBPE merges adjacent code ids, then train matched LMs on text BPE vs CodeBPE alphabets.
+
+**Status:** Full WikiText-2 working run recorded—train BPC **1.76** vs **1.88**, packing **0.227** vs **0.240** sym/char, invertibility and ±2 locality **1.00** in codec index space. Direction 3 missed coarseness gates. WikiText-2 scale only; see [`SCOPE_AND_LIMITS.md`](https://github.com/kmfarris/customLLM/blob/main/docs/SCOPE_AND_LIMITS.md).
+
+[`results.json`](https://github.com/kmfarris/customLLM/blob/main/experiments/working_lm/results.json)
 
 ---
 
 ## IMOL
 
-Programs are parsed and diagnosed before patches or tool invokes land on disk. Patches target declaration `@id`s; fmt output is the IR. `imol agent workshop-plan` dry-runs plan invokes under workshop caps; execution requires explicit approval. Agent stdout JSON remains at spec **0.4** while the language surface evolves (**0.5** shell/async preview).
+**Problem:** LLM agents patch and invoke tools against source that may not parse; line-based diffs drift after fmt.
 
-`npm run check` on a clean clone · [`docs/DESIGN.md`](https://github.com/kmfarris/imol/blob/main/docs/DESIGN.md)
+**Approach:** IMOL modules with `@id` declarations, fmt as IR, JSON agent oracles, workshop dry-run traces, MCP skill codebook for closed-model hosts.
+
+**Status:** Toolchain ships; **`npm run check`** passes. Language **0.5** (shell, async preview); agent stdout **0.4**. [`DESIGN.md`](https://github.com/kmfarris/imol/blob/main/docs/DESIGN.md)
 
 ---
 
 ## scatterbrain-steering
 
-Track C: each decode step runs the GRU, polls executive state, adds `α · bias` to logits. Conscience curriculum data was built with a fail-closed teacher boundary; smoke training has not passed every release gate. Influence ablations and the trajectory manifest are the stable deliverables.
+**Problem:** Turn-level plans and affect should steer an open-vocabulary decoder without resetting memory each token.
 
-[`docs/STEERING.md`](https://github.com/kmfarris/scatterbrain-steering/blob/main/docs/STEERING.md)
+**Approach:** GRU articulator + `ExecutivePoller` → `InfluenceSignal` → residual logit bias; conscience curriculum with local teacher fail-closed validation.
+
+**Status:** **15** pytest tests pass; curriculum v1 artifact with **39** approved trajectories; articulator release gates failed on smoke training (fluency / repetition). Not default speech in Scatterbrain. [`STEERING.md`](https://github.com/kmfarris/scatterbrain-steering/blob/main/docs/STEERING.md) · [`SPEECH_STATUS.md`](https://github.com/kmfarris/scatterbrain-steering/blob/main/SPEECH_STATUS.md)
 
 ---
 
-Issues and PRs on the repositories above.
+Issues and PRs welcome on each repository.
