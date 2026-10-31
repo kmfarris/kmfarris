@@ -45,23 +45,26 @@
 
 ---
 
-## scatterbrain-steering: steering what an AI says while it's speaking
+## scatterbrain-steering: an SNN conscience for inference-time alignment
 
-**What it is.** An experiment in guiding an AI's reply word by word, while the reply is being written.
+**What it is.** An alignment experiment in which a spiking neural network (SNN) acts as a conscience, steering a language model's word choices as it generates.
 
-**The problem.** A text-generating AI chooses each word based on what it has already written. A goal such as "mention these three points" or "stay calm" is usually stated once at the start, and the model may drift away from it partway through.
+**The problem.** Alignment is usually applied before a model is used. Fine-tuning methods such as RLHF and DPO build preferences into the weights, and system prompts state rules at the start of the conversation. During generation, the model has to keep to those rules through attention over its context alone. As a reply grows, the instructions carry less weight and the output can drift.
 
-**How it works.** A small language model writes one word at a time and keeps a running memory of the whole reply. Before each word, a separate "executive" looks at the plan for the reply and the system's current state, then gives a small push toward words that fit and away from words that don't. The language model still writes the sentence. The executive only shifts the odds.
-
-The training examples came from a local AI "teacher" that wrote questions, good answers, bad answers, and plans based on source text. Anything that broke the rules was thrown out automatically, and 39 examples passed.
+**How it works.**
+- **Conscience SNN.** A 128-neuron spiking network holds core values (empathy, compassion, truth, and others) and a list of *poison pairs*, such as "manipulate" alongside "truth." At each step it excites value-aligned candidate words and inhibits words that would complete a violation. Its values are deliberately hard to change: learning is slow and gated, so one adversarial input can't rewrite them.
+- **Executive.** Combines the conscience's state, a plan listing the concepts the reply should cover, and simulated neuromodulator levels into one bias with a bounded strength.
+- **Logit steering.** The bias is added to the language model's next-token scores before each word is chosen: `final = model scores + strength × conscience bias`. The alignment signal is applied again at every token instead of being read once from the prompt.
+- **Conscience curriculum.** A local teacher model turns seed lessons into grounded questions, preferred answers, rejected answers, and concept plans. Anything the source material doesn't support is rejected automatically. Thirty-nine examples passed and were recorded as step-by-step training trajectories.
 
 **Results so far.**
-- The steering mechanism works and is covered by 15 automated tests.
-- Turning the executive's push on or off measurably changes which words get chosen.
+- On held-out lessons, steering raised the output's match to the aligned reference from 0.0 (conscience off) to 0.1125 (conscience on), on the same model.
+- The conscience SNN's excitation, inhibition, and resistance to change are verified by tests. Eighteen automated tests cover the full pipeline.
+- The steering rule works with any model that exposes its next-token scores, including locally run open-source models.
 
 **Still to do.**
-- The small language model hasn't been trained enough to write fluent sentences yet. It repeats itself.
-- The executive follows rules written by hand instead of rules it learned from the training examples.
-- It stays switched off in the main Scatterbrain project until it passes its quality checks.
+- The small language model being steered has had only a short training run. It isn't fluent and doesn't yet cover every planned concept.
+- The conscience's bias strengths are set by hand. The next step is learning them from the curriculum.
+- **LoRA fine-tuning (planned):** adapt a small open-weight model on the conscience curriculum with the conscience active during training, then confirm that the model follows the conscience's signal by testing with that signal zeroed and shuffled.
 
 [How steering works](https://github.com/kmfarris/scatterbrain-steering/blob/main/docs/STEERING.md)
