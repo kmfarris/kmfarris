@@ -1,27 +1,37 @@
-# Cutting text differently, then training the same small model twice
+# Breaking text into better pieces for AI
 
-Before a language model can learn English, the text is cut into **tokens**. The usual cut follows spelling: common letter groups become common tokens (BPE). customLLM tries a different first cut. Each known word gets a code. Unknown words are spelled out so nothing is lost. Nearby codes may merge, the way BPE merges letters. Then two copies of the same small model train—one on ordinary BPE, one on the code alphabet—on the full WikiText-2 corpus.
+AI language models can't read words. Before a model sees any text, the text is chopped into small pieces called **tokens**, and the model learns to guess the next piece. Almost every model in use today chops text by spelling: wherever certain letters show up together often, that cluster becomes a token.
 
-The purpose of that bake-off is simple: if the *pieces* change, does the *same* model still learn, and do edits stay near the change?
+That approach works, but the pieces have nothing to do with meaning. One word might be split into three pieces while another stays whole. Edit a single word and the pieces nearby can rearrange. Two different words that look alike can end up sharing pieces.
 
-## What moved
+## A different way to chop
 
-**Density.** On training text, the code stream used 0.227 symbols per character vs 0.240 for BPE. Validation is looser than train because held-out words more often take the spell-out path. Both numbers are in `results.json`.
+The customLLM project tries something else:
 
-**Bits per character.** Training BPC was 1.76 (codes) vs 1.88 (BPE). That is a comparison of alphabets under one model size, not a claim about the largest models in the world.
+1. **Every known word gets its own code**, like a library call number. No two words share one.
+2. **Unfamiliar words are spelled out** letter by letter, so the original text can always be rebuilt.
+3. **Codes that often sit side by side are joined** into larger pieces, the way standard tokenizers join letters.
 
-**Locality and round-trip.** A one-word edit stays in a narrow window of codes. Decode returns the original text (score 1.00 on the protocol in the repo). Early locality scores were wrong when labels used the wrong index space; the scored protocol uses the codec’s own `split()` stream.
+## A fair test
 
-## What still needs work
+To find out whether this helps, two identical small AI models were trained on the same two million words of English from Wikipedia. One read standard tokens and the other read the new codes. Everything else was the same, so any difference comes from how the text was broken up.
 
-A coarser-merge experiment on a 100k-word slice missed its length targets. Phrase-sized units are not there yet. SentencePiece with a matched vocabulary on the same split is the obvious next baseline. Scaling past WikiText-2 waits on that.
+## What happened
 
-## Reproduce
+- **Nothing was lost.** Text converted to codes and back came out exactly as it went in.
+- **Edits stayed local.** Changing one word only changed the codes right around it.
+- **The model learned a little better.** The code-trained model needed about 6% less information per letter to predict the text (1.76 vs 1.88 bits per character).
+- **The text packed slightly tighter** as codes than as standard tokens.
+
+## What's left
+
+On text the system hadn't seen, more words had to be spelled out, so the advantage shrank. The joined pieces are still roughly word-sized, and an attempt to build phrase-sized pieces fell short of its target. The test also used one dataset and small models. The next steps are comparing against other modern tokenizers on the same text, then trying much larger collections of text.
+
+## Try it
 
 ```bash
 git clone https://github.com/kmfarris/customLLM
 cd customLLM
 pip install -e '.[dev]'
 python -m pytest tests/
-PRCF_REQUIRE_GPU=1 PYTHONPATH=src:. python -m experiments.working_lm.run
 ```

@@ -1,39 +1,67 @@
-# Kelly Farris — technical summary
+# Kelly Farris: project summary
 
 [github.com/kmfarris](https://github.com/kmfarris)
 
 ---
 
-## customLLM / PRCF
+## customLLM: a new way to break text into pieces for AI
 
-**Purpose.** Cut English into word-aligned codes (not spelling fragments), keep edits local, decode without collisions, and see whether a small language model trained on those codes can match or beat the usual tokenizer (BPE) when the model body is the same.
+**What it is.** A research project that tests a different way of preparing text before an AI language model reads it.
 
-**What works.** Full WikiText-2, six-layer 384-wide models: train BPC **1.76** vs **1.88**, train packing **0.227** vs **0.240** symbols per character, invertibility **1.00**, ±2 locality **1.00**.
+**The problem.** AI language models read text as a sequence of small pieces called tokens. The standard way of making tokens splits text wherever letter combinations are common. The pieces don't match whole words, and editing one word can change pieces elsewhere in the sentence. That makes it hard to see what changed, to swap one name for another, or to treat a word as the same thing every time it appears.
 
-**What still needs work.** Validation packing is looser than train. Merges are still near word length. Direction 3 missed coarseness gates. SentencePiece on the same split and anything larger than WikiText-2 are not measured yet.
+**How it works.** Every known word gets its own fixed code. Unfamiliar words are spelled out letter by letter, so the original text can always be rebuilt. Codes that often sit next to each other are joined into larger pieces. Two identical small AI models were then trained on the same two million words of English text (the WikiText-2 dataset), one with standard tokens and one with these codes, so the only difference was how the text was broken up.
 
-[`results.json`](https://github.com/kmfarris/customLLM/blob/main/experiments/working_lm/results.json) · [`SCOPE_AND_LIMITS.md`](https://github.com/kmfarris/customLLM/blob/main/docs/SCOPE_AND_LIMITS.md)
+**Results so far.**
+- Text converted to codes and back came out identical every time.
+- Changing a single word only affected the codes immediately around it.
+- The model trained on codes predicted the text slightly better, using about 6% less information per letter (1.76 vs 1.88 bits per character).
+- The codes packed the text a little more tightly than standard tokens.
+
+**Still to do.**
+- On text the system hasn't seen, more words have to be spelled out, so the advantage shrinks.
+- The joined pieces are still roughly word-sized. An attempt to build larger, phrase-sized pieces didn't reach its target.
+- It has only been tested on one dataset with small models, and hasn't yet been compared against other modern tokenizers.
+
+[Results data](https://github.com/kmfarris/customLLM/blob/main/experiments/working_lm/results.json)
 
 ---
 
-## IMOL
+## IMOL: a programming language built for AI coding assistants
 
-**Purpose.** Give coding agents a language they can typecheck and a runtime they can dry-run: parse first, patch by stable ids, preview tool calls, then approve writes and network.
+**What it is.** A programming language and a set of tools designed so AI assistants can write and change programs safely.
 
-**What works.** Parser, checker, formatter, patcher, workshop, CLI, and MCP oracles ship. **`npm run check`** passes on a clean clone.
+**The problem.** AI coding assistants usually produce code as plain text that gets dropped into a file. Errors show up only later, sometimes after the program has already deleted or changed files or contacted the internet. Edits that refer to line numbers break as soon as the file shifts.
 
-**What still needs work.** Language spec 0.5 vs agent JSON 0.4 should migrate together. Formal semantics and npm publish are unfinished.
+**How it works.**
+- **Name tags.** Every part of a program carries a permanent tag, so an edit can say "replace this function" rather than "replace lines 40 to 62."
+- **Checking first.** The program is checked for mistakes before anything is saved. Problems come back in a structured form the assistant can read and fix on its own.
+- **Declared permissions.** Each program states up front what it's allowed to do: read files, write files, use the network, or run commands.
+- **Rehearsal mode.** The program can be run as a rehearsal that lists every action it would take without doing any of them. Real actions need explicit approval.
 
-[`DESIGN.md`](https://github.com/kmfarris/imol/blob/main/docs/DESIGN.md)
+**Results so far.** The language, the checker, the editing tools, and the rehearsal runtime all work, and the full automated test suite passes. IMOL connects to the Cursor code editor so an assistant can use these checks directly.
+
+**Still to do.** The language has gained new features faster than the format it uses to talk to assistants, and the two need to be brought back in step. It isn't yet published as an installable package, and there's no formal written definition of the language.
 
 ---
 
-## scatterbrain-steering
+## scatterbrain-steering: steering what an AI says while it's speaking
 
-**Purpose.** Keep a decoder’s memory of the sentence while a separate executive signal nudges each next word (plan, guidance, chemical levels). Measure that steering with tests, ablations, and a teacher-built curriculum.
+**What it is.** An experiment in guiding an AI's reply word by word, while the reply is being written.
 
-**What works.** Fifteen tests pass. Curriculum v1 has 39 approved trajectories; failed lessons are kept. Influence changes scores in ablation.
+**The problem.** A text-generating AI chooses each word based on what it has already written. A goal such as "mention these three points" or "stay calm" is usually stated once at the start, and the model may drift away from it partway through.
 
-**What still needs work.** Smoke-trained decoder failed fluency and coverage gates. The poller is designed, not trained on the curriculum. Track C is off by default in Scatterbrain.
+**How it works.** A small language model writes one word at a time and keeps a running memory of the whole reply. Before each word, a separate "executive" looks at the plan for the reply and the system's current state, then gives a small push toward words that fit and away from words that don't. The language model still writes the sentence. The executive only shifts the odds.
 
-[`STEERING.md`](https://github.com/kmfarris/scatterbrain-steering/blob/main/docs/STEERING.md) · [`SPEECH_STATUS.md`](https://github.com/kmfarris/scatterbrain-steering/blob/main/SPEECH_STATUS.md)
+The training examples came from a local AI "teacher" that wrote questions, good answers, bad answers, and plans based on source text. Anything that broke the rules was thrown out automatically, and 39 examples passed.
+
+**Results so far.**
+- The steering mechanism works and is covered by 15 automated tests.
+- Turning the executive's push on or off measurably changes which words get chosen.
+
+**Still to do.**
+- The small language model hasn't been trained enough to write fluent sentences yet. It repeats itself.
+- The executive follows rules written by hand instead of rules it learned from the training examples.
+- It stays switched off in the main Scatterbrain project until it passes its quality checks.
+
+[How steering works](https://github.com/kmfarris/scatterbrain-steering/blob/main/docs/STEERING.md)
