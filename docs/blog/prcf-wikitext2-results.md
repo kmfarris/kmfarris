@@ -1,6 +1,6 @@
 # PRCF on WikiText-2: when the alphabet changes, the LM follows
 
-Standard subword tokenizers optimize for spelling frequency. PRCF asks a adjacent question: if each word (and escape path) maps to positioned codes with invertible decode, do edits stay local—and does a small language model trained on merged *codes* behave differently from one trained on merged *characters*?
+Standard subword tokenizers optimize for spelling frequency. PRCF asks a different question: if each word (and escape path) maps to positioned codes with invertible decode, do edits stay local—and does a small language model trained on merged *codes* behave differently from one trained on merged *characters*?
 
 This post summarizes the working-scale bake-off on full WikiText-2. Numbers come from committed `results.json`; scope caveats live in the repo’s evaluation note.
 

@@ -8,7 +8,7 @@ Agent loops often treat source files as text buffers: the model proposes a diff,
 
 **Patch.** Operations target declarations by UUID—replace, insert after, delete—not fragile line numbers. Fmt output is the IR; patches commute with canonical formatting.
 
-**Workshop plan.** Plan blocks describe tool invokes under a capability envelope (`allow_net`, `allow_write`, `allow_shell`, MCP binds). Dry-run emits a trace; approval is explicit. Side effects wait on policy, not on model enthusiasm.
+**Workshop plan.** Plan blocks describe tool invokes under a capability envelope (`allow_net`, `allow_write`, `allow_shell`, MCP binds). Dry-run emits a trace; approval is explicit. Side effects wait on policy, not on implicit approval.
 
 ## Why two spec versions appear
 
