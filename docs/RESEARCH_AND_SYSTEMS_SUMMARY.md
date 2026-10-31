@@ -1,45 +1,31 @@
-# Research and systems summary
+# Kelly Farris — technical summary
 
-**Kelly Farris** · [github.com/kmfarris](https://github.com/kmfarris)
+[github.com/kmfarris](https://github.com/kmfarris)
 
 ---
 
 ## customLLM / PRCF
 
-**Question:** If text is represented as positioned residual codes rather than spelling-BPE pieces, do edit locality and invertibility improve—and can a matched small LM prefer that alphabet?
+Positioned residual codes and bucket+slot packing define an invertible word-level alphabet; CodeBPE merges adjacent code ids (never through escape tokens). On full WikiText-2, a six-layer 384-d LM trained on that alphabet reaches train BPC **1.76** vs **1.88** for text BPE at the same width, train packing **0.227** vs **0.240** sym/char, invertibility **1.00**, ±2 edit locality **1.00** in codec index space. The direction-3 scale ladder missed coarseness gates at an intermediate slice; those numbers stay in the repo.
 
-**Result (WikiText-2, 6L/384d):** Bucket+slot injective in-vocab coding with CodeBPE merges yields train BPC **1.76** vs text BPE **1.88** (ratio **0.94**), train packing **0.227** vs **0.240** sym/char, invertibility **1.00**, ±2 locality **1.00** in codec index space. Direction 3 scale ladder failed coarseness gates; documented in repo.
-
-**Artifact:** [`experiments/working_lm/results.json`](https://github.com/kmfarris/customLLM/blob/main/experiments/working_lm/results.json)
-
-**Scope note:** [`docs/SCOPE_AND_LIMITS.md`](https://github.com/kmfarris/customLLM/blob/main/docs/SCOPE_AND_LIMITS.md)
+[`experiments/working_lm/results.json`](https://github.com/kmfarris/customLLM/blob/main/experiments/working_lm/results.json) · [`docs/SCOPE_AND_LIMITS.md`](https://github.com/kmfarris/customLLM/blob/main/docs/SCOPE_AND_LIMITS.md)
 
 ---
 
 ## IMOL
 
-**Question:** How should agents edit programs without corrupting structure or firing tools on invalid IR?
+Programs are parsed and diagnosed before patches or tool invokes land on disk. Patches target declaration `@id`s; fmt output is the IR. `imol agent workshop-plan` dry-runs plan invokes under workshop caps; execution requires explicit approval. Agent stdout JSON remains at spec **0.4** while the language surface evolves (**0.5** shell/async preview).
 
-**Mechanism:** ID-keyed patches, JSON oracle (`imol agent check`), in-memory patch re-check, workshop dry-run trace before approval. MCP tools for the same contracts.
-
-**Verify:** `npm run check` on clone.
-
-**Design:** [`docs/DESIGN.md`](https://github.com/kmfarris/imol/blob/main/docs/DESIGN.md)
+`npm run check` on a clean clone · [`docs/DESIGN.md`](https://github.com/kmfarris/imol/blob/main/docs/DESIGN.md)
 
 ---
 
 ## scatterbrain-steering
 
-**Question:** Can executive state steer a persistent decoder without replacing LM memory?
+Track C: each decode step runs the GRU, polls executive state, adds `α · bias` to logits. Conscience curriculum data was built with a fail-closed teacher boundary; smoke training has not passed every release gate. Influence ablations and the trajectory manifest are the stable deliverables.
 
-**Mechanism:** `ExecutivePoller` → `InfluenceSignal` → residual logit bias; conscience curriculum with fail-closed teacher; pytest + release gate harness.
-
-**Status:** Smoke LM training has not cleared all release gates; dataset and influence ablation are the portable contribution.
-
-**Architecture:** [`docs/STEERING.md`](https://github.com/kmfarris/scatterbrain-steering/blob/main/docs/STEERING.md)
+[`docs/STEERING.md`](https://github.com/kmfarris/scatterbrain-steering/blob/main/docs/STEERING.md)
 
 ---
 
-## Contact
-
-Repositories above; issues and PRs welcome on each project.
+Issues and PRs on the repositories above.

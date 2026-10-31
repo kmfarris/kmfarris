@@ -1,4 +1,4 @@
-# IMOL: structure on the critical path
+# IMOL: parse before patch
 
 Agent loops often treat source files as text buffers: the model proposes a diff, the host applies it, and errors surface later—sometimes on disk already changed. IMOL inverts the order. Parse first. Diagnose with stable declaration IDs. Patch in memory and re-check. Dry-run plan invokes before anything touches the filesystem.
 
@@ -26,6 +26,6 @@ npm run check
 
 Terminal cast outline: [`docs/DEMO.md`](https://github.com/kmfarris/imol/blob/main/docs/DEMO.md).
 
-## Where it fits
+## Source
 
-Teams building agent platforms need the same primitives databases got decades ago: constraints before mutation, traces before commit. IMOL is a small language plus CLI plus MCP oracles encoding that contract for LLM-authored programs—not a replacement for your runtime, but a layer agents can call without improvising JSON tool schemas per repo.
+Grammar, agent API schema, and conformance scripts live in the [IMOL repository](https://github.com/kmfarris/imol).

@@ -2,7 +2,7 @@
 
 Standard subword tokenizers optimize for spelling frequency. PRCF asks a different question: if each word (and escape path) maps to positioned codes with invertible decode, do edits stay local—and does a small language model trained on merged *codes* behave differently from one trained on merged *characters*?
 
-This post summarizes the working-scale bake-off on full WikiText-2. Numbers come from committed `results.json`; scope caveats live in the repo’s evaluation note.
+The working-scale bake-off on full WikiText-2 is in `results.json`; metric scope is in the repo evaluation note.
 
 ## The pipeline
 

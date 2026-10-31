@@ -1,16 +1,12 @@
 # Kelly Farris
 
-Research and systems work at the boundary of **tokenization**, **agent runtimes**, and **decoder control**—with reproducible artifacts first, narrative second.
+## Projects
 
-## Flagship repositories
-
-| Project | Focus |
-|---------|--------|
-| [**customLLM**](https://github.com/kmfarris/customLLM) | PRCF: positioned codes, bucket+slot invertibility, matched LM bake-offs on WikiText-2 |
-| [**IMOL**](https://github.com/kmfarris/imol) | Agent language: check → patch → workshop dry-run, MCP oracle tools |
-| [**scatterbrain-steering**](https://github.com/kmfarris/scatterbrain-steering) | Executive logit bias on a persistent GRU decoder; conscience curriculum + release gates |
-
-## Verify in one command each
+| | |
+|---|---|
+| [**customLLM**](https://github.com/kmfarris/customLLM) | PRCF tokenization — bucket+slot codes, CodeBPE merges, matched LM runs on WikiText-2 |
+| [**IMOL**](https://github.com/kmfarris/imol) | Language for agent-authored programs; `check`, id-keyed `patch`, workshop dry-run, MCP oracles |
+| [**scatterbrain-steering**](https://github.com/kmfarris/scatterbrain-steering) | GRU decoder with per-token executive logit bias; conscience curriculum and release gates |
 
 ```bash
 git clone https://github.com/kmfarris/customLLM && cd customLLM && pip install -e '.[dev]' && python -m pytest tests/
@@ -20,11 +16,8 @@ git clone https://github.com/kmfarris/imol && cd imol && npm install && npm run 
 git clone https://github.com/kmfarris/scatterbrain-steering && cd scatterbrain-steering && pip install -r requirements-dev.txt && PYTHONPATH=. python -m pytest tests/ -q
 ```
 
-## Writing
+## Notes
 
-- [PRCF on WikiText-2](docs/blog/prcf-wikitext2-results.md) — locality, packing, matched BPC
-- [IMOL agent loop](docs/blog/imol-check-patch-workshop.md) — structure before side effects
-
-## Summary
-
-One-page overview for hiring: [`docs/RESEARCH_AND_SYSTEMS_SUMMARY.md`](docs/RESEARCH_AND_SYSTEMS_SUMMARY.md) (export to PDF from your editor or `pandoc`).
+- [PRCF on WikiText-2](docs/blog/prcf-wikitext2-results.md)
+- [IMOL: parse, patch, workshop](docs/blog/imol-check-patch-workshop.md)
+- [Technical summary](docs/RESEARCH_AND_SYSTEMS_SUMMARY.md)
